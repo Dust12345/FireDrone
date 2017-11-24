@@ -1,0 +1,8 @@
+[Bb]in
+[Dd]ebug*/
+*.dll
+*.exe
+*.ipch
+*.dp
+.vs*/
+*.sdf
