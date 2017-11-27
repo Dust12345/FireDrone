@@ -18,30 +18,30 @@
     <ClCompile Include="main.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\remoteApi\extApi.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\remoteApi\extApiPlatform.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="DroneNavController.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Point.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\remoteApi\extApi.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\remoteApi\extApiPlatform.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\remoteApi\extApi.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\remoteApi\extApiInternal.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="DroneNavController.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Point.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\remoteApi\extApi.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\remoteApi\extApiPlatform.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

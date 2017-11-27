@@ -4,6 +4,8 @@
 
 DroneNavController::DroneNavController()
 {
+	ticksWaited = 0;
+	currentTargetRotation = -1.6;
 	genNavPoints();
 }
 
@@ -20,6 +22,8 @@ void DroneNavController::createNavPointsOnCircle(const Point& center, float radi
 	float stepSize = (pi*2)  / numberOfPoints;
 	float rad = 0;
 
+
+
 	
 
 	for (int i = 0; i < numberOfPoints; i++)
@@ -30,7 +34,8 @@ void DroneNavController::createNavPointsOnCircle(const Point& center, float radi
 		p.y = center.y + radius * sin(rad);
 		p.z = desiredAltitude;
 		navPoints.push_back(p);
-		rotateAtPoint.push_back(0);
+		waitTimes.push_back(0);
+		rotAtPoint.push_back(0);
 
 
 		rad = rad + stepSize;
@@ -56,9 +61,9 @@ void DroneNavController::startNavigation()
 Point DroneNavController::getDronePos()
 {
 
-	float xOffset = -1;
-	float yOffset = +1;
-	float zOffset = +0.5;
+	float xOffset = 0;
+	float yOffset = 0;
+	float zOffset = 0;
 
 	float gpsX = 1;
 	float gpsY = 1;
@@ -84,18 +89,64 @@ void  DroneNavController::update()
 	Point dronePos = getDronePos();
 
 	Point currentDest = navPoints.at(currentDestIndex);
+	
+	float dronePos2[3] = { 0,0,0 };
+
+	if (first)
+	{
+		simxGetObjectPosition(clientID, droneHandle, -1, dronePos2, simx_opmode_streaming);
+		first = false;
+	}
+	else {
+		simxGetObjectPosition(clientID, droneHandle, -1, dronePos2, simx_opmode_buffer);
+	}
+	
+	//overwrite the drone pos we get from the gps because the gps coordinates change when the drone is rotated, which makes no sense
+
+	//dronePos.x = dronePos2[0];
+	//dronePos.y = dronePos2[1];
+	//dronePos.z = dronePos2[2];
 
 	if (dronePos.distance(currentDest) <= targetDestErrorMargin)
 	{
-		//move to the next pos and wrap around if needed
-		currentDestIndex++;
-		currentDestIndex = currentDestIndex%navPoints.size();
+	
+		int timeToWait = waitTimes.at(currentDestIndex);
+		
+		if (timeToWait == ticksWaited)
+		{
 
-		Point newDestPoint =  navPoints.at(currentDestIndex);
+			//move to the next pos and wrap around if needed
+			currentDestIndex++;
+			currentDestIndex = currentDestIndex%navPoints.size();
 
-		//set a new dest
-		float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
-		simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
+			Point newDestPoint = navPoints.at(currentDestIndex);
+
+			//set a new dest
+			float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
+			simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
+			ticksWaited = 0;
+		}
+		else {
+			
+			//during half time we rotate the drone
+			
+			
+
+			if (ticksWaited == timeToWait / 2) {
+				currentTargetRotation = currentTargetRotation + rotAtPoint.at(currentDestIndex);
+
+				float eulerAngle[3] = { 0,0,currentTargetRotation };
+
+				simxSetObjectOrientation(clientID, targetHandle, -1, eulerAngle, simx_opmode_oneshot);
+			}
+
+			
+
+
+			ticksWaited++;
+		}
+
+		
 
 	}
 	else{
@@ -106,42 +157,48 @@ void  DroneNavController::update()
 
 void DroneNavController::generateNavGridNavPoints()
 {
-	int size = 5;
+	int size = 10;
+	int waitTime = 150;
+
 
 	Point p1;
 	p1.x = 0;
 	p1.y = 0;
 	p1.z = desiredAltitude;
 	navPoints.push_back(p1);
-	rotateAtPoint.push_back(90);
+	waitTimes.push_back(waitTime);
+	rotAtPoint.push_back(1.6);
 
 	Point p2;
 	p2.x = size;
 	p2.y = 0;
 	p2.z = desiredAltitude;
 	navPoints.push_back(p2);
-	rotateAtPoint.push_back(90);
+	waitTimes.push_back(waitTime);
+	rotAtPoint.push_back(1.6);
 
 	Point p3;
 	p3.x = size;
 	p3.y = size;
 	p3.z = desiredAltitude;
 	navPoints.push_back(p3);
-	rotateAtPoint.push_back(90);
+	waitTimes.push_back(waitTime);
+	rotAtPoint.push_back(1.6);
 
 	Point p4;
 	p4.x = 0;
 	p4.y = size;
 	p4.z = desiredAltitude;
 	navPoints.push_back(p4);
-	rotateAtPoint.push_back(90);
+	waitTimes.push_back(waitTime);
+	rotAtPoint.push_back(1.6);
 
 
 }
 
 void DroneNavController::genNavPoints() 
 {
-	bool createCircle = true;
+	bool createCircle = false;
 
 	if (createCircle)
 	{

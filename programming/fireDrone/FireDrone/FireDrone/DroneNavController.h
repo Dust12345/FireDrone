@@ -14,9 +14,12 @@ class DroneNavController
 private:
 	
 	std::vector<Point> navPoints;
-	std::vector<float> rotateAtPoint;
+	std::vector<int> waitTimes;
+	std::vector<float> rotAtPoint;
 
-	float desiredAltitude = 1;
+	float desiredAltitude = 6;
+	float currentTargetRotation;
+
 
 	int clientID;
 	
@@ -25,7 +28,9 @@ private:
 
 	int currentDestIndex;
 
-	float targetDestErrorMargin = 2;
+	int ticksWaited;
+
+	float targetDestErrorMargin = 1.5;
 
 	Point getDronePos();
 
@@ -34,6 +39,14 @@ private:
 	void generateNavGridNavPoints();
 
 	
+public:
+	//dbug stuff
+
+	int droneHandle;
+
+	bool first = true;
+
+
 
 public:
 	DroneNavController();

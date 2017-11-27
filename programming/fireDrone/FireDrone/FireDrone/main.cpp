@@ -11,6 +11,7 @@
 #include <iostream>
 
 
+
 extern "C" {
 	#include "extApi.h"
 }
@@ -38,6 +39,61 @@ Mat createCvImageFromBuffer(unsigned char *bufferImage, int resolutionX, int res
 }
 
 
+void placeTrees(int clientID, int density,int size,float xStart, float yStart,int variance)
+{
+	cv::RNG rng = RNG(12345);
+
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			
+			int han = 0;
+			std::string treePath = "C:/Program Files/V-REP3/V-REP_PRO_EDU/models/nature/Tree.ttm";
+			simxLoadModel(clientID, treePath.c_str(), 0, &han, simx_opmode_blocking);
+
+			int xRandom = rng.uniform(variance*-1, variance);
+			int yRandom = rng.uniform(variance*-1, variance);
+
+
+			float xPos = xStart + (i*density) + xRandom;
+			float yPos = yStart + (j*density) + yRandom;
+
+			float newDest[3] = { xPos, yPos, 2 };
+
+			simxSetObjectPosition(clientID, han, -1, newDest, simx_opmode_oneshot);
+
+		}
+	}
+
+}
+
+void placeFires(int clientID,int numberOfFires,int bounds)
+{
+
+	cv::RNG rng = RNG(589);
+
+	for (int j = 0; j < numberOfFires; j++)
+	{
+
+		int han = 0;
+		std::string firePath = "C:/Program Files/V-REP3/V-REP_PRO_EDU/models/other/fire.ttm";
+		simxLoadModel(clientID, firePath.c_str(), 0, &han, simx_opmode_blocking);
+
+		int xRandom = rng.uniform(bounds*-1, bounds);
+		int yRandom = rng.uniform(bounds*-1, bounds);
+
+
+		float xPos = xRandom;
+		float yPos = yRandom;
+
+		float newDest[3] = { xPos, yPos, 0 };
+
+		simxSetObjectPosition(clientID, han, -1, newDest, simx_opmode_oneshot);
+
+	}
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -49,9 +105,14 @@ int main(int argc, char* argv[])
 
 	DroneNavController nc;
 
+
+	placeTrees(clientID,2,10,-10,-10,1);
+	placeFires(clientID,6,10);
+
 	if (clientID != -1){
 
 		//camera stuff
+		
 
 
 		namedWindow("Display window", WINDOW_AUTOSIZE);// Create a window for display.
@@ -82,25 +143,16 @@ int main(int argc, char* argv[])
 
 		simxGetVisionSensorImage(clientID, camHandle, &resolutionConnection2[0], &img, 1, simx_opmode_streaming);
 
-		//----
+		
 
 
 		int droneHandle = 0;
 		simxGetObjectHandle(clientID, "Quadricopter", &droneHandle, simx_opmode_blocking);
 
-		//int res[2] = { 400, 400};
-
-		//int camHandle = 0;
-		//unsigned char* img[1];
-
 		int thandle = 0;
 		simxGetObjectHandle(clientID, "Quadricopter_target", &thandle, simx_opmode_blocking);
-
-		//simxGetObjectHandle(clientID, "Quadricopter_frontCamera", &camHandle, simx_opmode_blocking);
-		//simxGetVisionSensorImage(clientID, camHandle, res, img, 1, simx_opmode_streaming);
-
-		//unsigned char* gpsSignal[1];
-		//int gpsDataLength = 0;
+	
+	
 
 		float gpsX = 1;
 		float gpsY = 1;
@@ -121,6 +173,11 @@ int main(int argc, char* argv[])
 		simxGetObjectPosition(clientID, thandle, -1, newPos, simx_opmode_buffer);
 
 
+		float eulerAngle[3] = { 0,0,-1.6 };
+
+		simxSetObjectOrientation(clientID, thandle, -1, eulerAngle, simx_opmode_oneshot);
+
+
 		int prophandle;
 		//test stuff below
 		
@@ -131,6 +188,8 @@ int main(int argc, char* argv[])
 
 		bool first = true;
 
+		nc.droneHandle = droneHandle;
+
 		while (simxGetConnectionId(clientID) != -1)
 		{
 		
@@ -139,6 +198,8 @@ int main(int argc, char* argv[])
 			Mat cvImage = createCvImageFromBuffer(img, resX, resY);
 			imshow("Display window", cvImage);
 			waitKey(1);
+
+
 
 			if (!initOnce){
 				nc.startNavigation();
