@@ -95,6 +95,7 @@ void placeFires(int clientID,int numberOfFires,int bounds)
 }
 
 
+
 int main(int argc, char* argv[])
 {
 	int portNb =20001;
@@ -106,8 +107,8 @@ int main(int argc, char* argv[])
 	DroneNavController nc;
 
 
-	placeTrees(clientID,2,10,-10,-10,1);
-	placeFires(clientID,6,10);
+	//placeTrees(clientID,2,10,-10,-10,1);
+	//placeFires(clientID,6,10);
 
 	if (clientID != -1){
 
@@ -128,6 +129,9 @@ int main(int argc, char* argv[])
 		getmemory(&img, resX, resY);
 		char options = 1;
 		int resolutionConnection2[2] = { 0,0 };
+
+		int proxhandle;
+		simxGetObjectHandle(clientID, "Proximity_sensor0", &proxhandle, simx_opmode_blocking);
 
 
 		if (simxReadVisionSensor(clientID, camHandle, NULL, NULL, NULL, simx_opmode_oneshot_wait) == simx_error_noerror)
@@ -167,8 +171,10 @@ int main(int argc, char* argv[])
 		simxGetObjectPosition(clientID, droneHandle, -1, newPos, simx_opmode_streaming);
 		
 		bool initOnce = false;
+
 		
-		nc.setComVars(clientID, thandle);
+		
+		nc.setComVars(clientID, thandle, proxhandle);
 		
 		simxGetObjectPosition(clientID, thandle, -1, newPos, simx_opmode_buffer);
 
@@ -190,9 +196,18 @@ int main(int argc, char* argv[])
 
 		nc.droneHandle = droneHandle;
 
+
+		simxUChar* detectState = new simxUChar();
+		float detectPos[3] = { 0, 0, 0 };
+		simxReadProximitySensor(clientID, proxhandle, detectState, detectPos, NULL, NULL, simx_opmode_streaming);
+
 		while (simxGetConnectionId(clientID) != -1)
 		{
 		
+			
+		
+			
+
 			simxGetVisionSensorImage(clientID, camHandle, &resolutionConnection2[0], &img, 1, simx_opmode_buffer);
 
 			Mat cvImage = createCvImageFromBuffer(img, resX, resY);
@@ -201,14 +216,19 @@ int main(int argc, char* argv[])
 
 
 
-			if (!initOnce){
+			nc.newUpdate();
+		
+			/*if (!initOnce) {
 				nc.startNavigation();
 				initOnce = true;
 			}
-			else{
+			else {
 				nc.update();
-			}		
-		
+				
+			}*/
+			
+
+
 
 			extApi_sleepMs(50);
 		}
