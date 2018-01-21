@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\..\..\..\..\remoteApi\extApiPlatform.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="FireDetection.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DroneNavController.h">
@@ -42,6 +45,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\remoteApi\extApiPlatform.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="FireDetection.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

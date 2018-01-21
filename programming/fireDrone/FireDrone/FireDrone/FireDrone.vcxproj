@@ -72,6 +72,7 @@
     <ClCompile Include="..\..\..\..\..\..\remoteApi\extApi.c" />
     <ClCompile Include="..\..\..\..\..\..\remoteApi\extApiPlatform.c" />
     <ClCompile Include="DroneNavController.cpp" />
+    <ClCompile Include="FireDetection.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Point.cpp" />
   </ItemGroup>
@@ -79,6 +80,7 @@
     <ClInclude Include="..\..\..\..\..\..\remoteApi\extApi.h" />
     <ClInclude Include="..\..\..\..\..\..\remoteApi\extApiPlatform.h" />
     <ClInclude Include="DroneNavController.h" />
+    <ClInclude Include="FireDetection.h" />
     <ClInclude Include="Point.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

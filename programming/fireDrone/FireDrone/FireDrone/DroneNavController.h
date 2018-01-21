@@ -27,25 +27,25 @@ private:
 
 
 	
-	std::vector<Point> activeNavPoints;
+	std::vector<MyPoint> activeNavPoints;
 	std::vector<int> activeWaitTimes;
 	std::vector<float> activeRotAtPoint;
 
-	std::vector<Point> baseNavPointsStart;
+	std::vector<MyPoint> baseNavPointsStart;
 	std::vector<int> waitTimesStart;
 	std::vector<float> rotAtPointStart;
 
 
-	std::vector<Point> baseNavPointsLand;
+	std::vector<MyPoint> baseNavPointsLand;
 	std::vector<int> waitTimesLand;
 	std::vector<float> rotAtPointLand;
 
 
-	std::vector<Point> navPoints;
+	std::vector<MyPoint> navPoints;
 	std::vector<int> waitTimes;
 	std::vector<float> rotAtPoint;
 
-	float desiredAltitude = 6;
+	float desiredAltitude = 8;
 	float currentTargetRotation;
 
 
@@ -63,30 +63,30 @@ private:
 
 	float targetDestErrorMargin = 1.5;
 
-	float maxEnergy = 5;
-	float currentEnergy = 5;
+	float maxEnergy = 8;
+	float currentEnergy = 8;
 	float energyThreshold = 1;
 	bool initOnce = false;
 
 	float energyConsumptionPerTick = 0.005;
 
-	Point base = Point(0, -10, 1);
+	MyPoint base = MyPoint(0, -10, 1);
 
 	bool obsticalDetected = false;
 
-	Point getDronePos();
+	MyPoint getDronePos();
 
-	void createNavPointsOnCircle(const Point& center, float radius, int numberOfPoints);
+	void createNavPointsOnCircle(const MyPoint& center, float radius, int numberOfPoints);
 
 	void generateNavGridNavPoints();
 
 	double degToRad(double deg);
 
-	void calcRotations(std::vector<Point> points,std::vector<int>& waitTimes, std::vector<float>& rotAtPoint);
+	void calcRotations(std::vector<MyPoint> points,std::vector<int>& waitTimes, std::vector<float>& rotAtPoint);
 	
-	double calcAngle(Point vct1, Point vct2);
+	double calcAngle(MyPoint vct1, MyPoint vct2);
 
-	double angleAtCorner(Point p1, Point p2, Point p3);
+	double angleAtCorner(MyPoint p1, MyPoint p2, MyPoint p3);
 
 
 

@@ -9,7 +9,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
-
+#include "FireDetection.h"
 
 
 extern "C" {
@@ -19,24 +19,6 @@ extern "C" {
 using namespace cv;
 
 
-void getmemory(unsigned char **p, int rX, int rY) {
-	*p = (unsigned char *)malloc(rX*rY * 3 * sizeof(unsigned char));
-}
-
-Mat createCvImageFromBuffer(unsigned char *bufferImage, int resolutionX, int resolutionY)
-{
-	Mat cvImage(resolutionX, resolutionY,CV_8UC1, double(0));
-	int print;
-	int count;
-	count = resolutionX*resolutionY;
-	for (print = 0; print != count; print++)
-	{
-		cvImage.at<uchar>(cv::Point(print%resolutionX, print / resolutionX)) = bufferImage[print];
-	}
-	//Mat dst;
-	//normalize(cvImage, dst, 0, 1, cv::NORM_MINMAX);
-	return cvImage;
-}
 
 
 void placeTrees(int clientID, int density,int size,float xStart, float yStart,int variance)
@@ -68,7 +50,8 @@ void placeTrees(int clientID, int density,int size,float xStart, float yStart,in
 
 }
 
-void placeFires(int clientID,int numberOfFires,int bounds)
+
+void placeFires(int clientID, int numberOfFires, int bounds)
 {
 
 	cv::RNG rng = RNG(589);
@@ -77,7 +60,7 @@ void placeFires(int clientID,int numberOfFires,int bounds)
 	{
 
 		int han = 0;
-		std::string firePath = "C:/Program Files/V-REP3/V-REP_PRO_EDU/models/other/fire.ttm";
+		std::string firePath = "C:/Program Files/V-REP3/V-REP_PRO_EDU/programming/fireDrone/FireDrone/Scene/InfraRedFire.ttm";
 		simxLoadModel(clientID, firePath.c_str(), 0, &han, simx_opmode_blocking);
 
 		int xRandom = rng.uniform(bounds*-1, bounds);
@@ -86,6 +69,11 @@ void placeFires(int clientID,int numberOfFires,int bounds)
 
 		float xPos = xRandom;
 		float yPos = yRandom;
+
+		//float xPos = 0;
+		//float yPos = 0;
+
+
 
 		float newDest[3] = { xPos, yPos, 0 };
 
@@ -102,13 +90,14 @@ int main(int argc, char* argv[])
 	int clientID = simxStart((simxChar*)"127.0.0.1", portNb, true, true, 2000, 5);
 	std::string droneName = "Quadricopter";
 	std::string frontCamName = "Quadricopter_frontCamera";
+	std::string gyroscope = "GyroSensor";
 
 
 	DroneNavController nc;
+	FireDetection fd;
 
-
-	//placeTrees(clientID,2,10,-10,-10,1);
-	//placeFires(clientID,6,10);
+	//placeTrees(clientID,2,10,0,0,5);
+	//placeFires(clientID,8,10);
 
 	if (clientID != -1){
 
@@ -122,11 +111,15 @@ int main(int argc, char* argv[])
 		int resY = 256;
 		int res[2] = { 256, 256 };
 
+		int gyrohandle = 0;
 		int camHandle = 0;
 		unsigned char* img;
+
+
+
 		simxGetObjectHandle(clientID, "Infrared_Sensor", &camHandle, simx_opmode_blocking);
-		//simxGetVisionSensorImage(clientID, camHandle, res, &img, 0, simx_opmode_streaming);
-		getmemory(&img, resX, resY);
+		simxGetObjectHandle(clientID, "GyroSensor", &gyrohandle, simx_opmode_blocking);
+		
 		char options = 1;
 		int resolutionConnection2[2] = { 0,0 };
 
@@ -172,10 +165,12 @@ int main(int argc, char* argv[])
 		
 		bool initOnce = false;
 
-		
-		
+	
+		fd.setComVars(clientID, camHandle, gyrohandle);
 		nc.setComVars(clientID, thandle, proxhandle);
-		
+		fd.init();
+
+
 		simxGetObjectPosition(clientID, thandle, -1, newPos, simx_opmode_buffer);
 
 
@@ -183,14 +178,6 @@ int main(int argc, char* argv[])
 
 		simxSetObjectOrientation(clientID, thandle, -1, eulerAngle, simx_opmode_oneshot);
 
-
-		int prophandle;
-		//test stuff below
-		
-		float v1 = 0;
-		float v2 = 0;
-		float v3 = 0;
-		float v4 = 0;
 
 		bool first = true;
 
@@ -203,33 +190,9 @@ int main(int argc, char* argv[])
 
 		while (simxGetConnectionId(clientID) != -1)
 		{
-		
 			
-		
-			
-
-			simxGetVisionSensorImage(clientID, camHandle, &resolutionConnection2[0], &img, 1, simx_opmode_buffer);
-
-			Mat cvImage = createCvImageFromBuffer(img, resX, resY);
-			imshow("Display window", cvImage);
-			waitKey(1);
-
-
-
 			nc.newUpdate();
-		
-			/*if (!initOnce) {
-				nc.startNavigation();
-				initOnce = true;
-			}
-			else {
-				nc.update();
-				
-			}*/
-			
-
-
-
+			fd.update();
 			extApi_sleepMs(50);
 		}
 		simxFinish(clientID);

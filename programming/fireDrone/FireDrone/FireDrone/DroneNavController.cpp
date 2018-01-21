@@ -18,7 +18,7 @@ DroneNavController::~DroneNavController()
 }
 
 
-void DroneNavController::createNavPointsOnCircle(const Point& center, float radius, int numberOfPoints)
+void DroneNavController::createNavPointsOnCircle(const MyPoint& center, float radius, int numberOfPoints)
 {
 	
 
@@ -27,7 +27,7 @@ void DroneNavController::createNavPointsOnCircle(const Point& center, float radi
 
 	for (int i = 0; i < numberOfPoints; i++)
 	{
-		Point p;
+		MyPoint p;
 
 		p.x = center.x + radius * cos(rad);
 		p.y = center.y + radius * sin(rad);
@@ -51,14 +51,14 @@ void DroneNavController::setComVars(int cID, int th,int ph)
 
 void DroneNavController::startNavigation()
 {
-	Point newDestPoint = activeNavPoints.at(currentDestIndex);
+	MyPoint newDestPoint = activeNavPoints.at(currentDestIndex);
 
 	//set a new dest
 	float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
 	simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
 }
 
-Point DroneNavController::getDronePos()
+MyPoint DroneNavController::getDronePos()
 {
 
 	float xOffset = 0;
@@ -74,7 +74,7 @@ Point DroneNavController::getDronePos()
 	simxGetFloatSignal(clientID, "gpsY", &gpsY, simx_opmode_buffer);
 	simxGetFloatSignal(clientID, "gpsZ", &gpsZ, simx_opmode_buffer);
 
-	Point dronePos;
+	MyPoint dronePos;
 	dronePos.x = gpsX + xOffset;
 	dronePos.y = gpsY + yOffset;
 	dronePos.z = gpsZ + zOffset;
@@ -91,9 +91,9 @@ void  DroneNavController::update()
 {
 	//check the distance between the target and the drone	
 
-	Point dronePos = getDronePos();
+	MyPoint dronePos = getDronePos();
 
-	Point currentDest = navPoints.at(currentDestIndex);
+	MyPoint currentDest = navPoints.at(currentDestIndex);
 
 	if (dronePos.distance(currentDest) <= targetDestErrorMargin)
 	{
@@ -107,7 +107,7 @@ void  DroneNavController::update()
 			currentDestIndex++;
 			currentDestIndex = currentDestIndex%navPoints.size();
 
-			Point newDestPoint = navPoints.at(currentDestIndex);
+			MyPoint newDestPoint = navPoints.at(currentDestIndex);
 
 			//set a new dest
 			float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
@@ -143,7 +143,7 @@ void  DroneNavController::update()
 			if (obsticalDetected) {
 				obsticalDetected = false;
 				//detection
-				Point newDestPoint = navPoints.at(currentDestIndex);
+				MyPoint newDestPoint = navPoints.at(currentDestIndex);
 
 			
 				float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
@@ -156,7 +156,7 @@ void  DroneNavController::update()
 			{
 				
 				//detection
-				Point newDestPoint = navPoints.at(currentDestIndex);
+				MyPoint newDestPoint = navPoints.at(currentDestIndex);
 
 				float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z+3 };
 				simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
@@ -175,25 +175,25 @@ void DroneNavController::generateNavGridNavPoints()
 	int waitTime =200;
 
 
-	Point p1;
+	MyPoint p1;
 	p1.x = 0;
 	p1.y = 0;
 	p1.z = desiredAltitude;
 	navPoints.push_back(p1);
 
-	Point p2;
+	MyPoint p2;
 	p2.x = size;
 	p2.y = 0;
 	p2.z = desiredAltitude;
 	navPoints.push_back(p2);
 
-	Point p3;
+	MyPoint p3;
 	p3.x = size;
 	p3.y = size;
 	p3.z = desiredAltitude;
 	navPoints.push_back(p3);
 
-	Point p4;
+	MyPoint p4;
 	p4.x = 0;
 	p4.y = size;
 	p4.z = desiredAltitude;
@@ -203,7 +203,7 @@ void DroneNavController::generateNavGridNavPoints()
 }
 
 
-double DroneNavController::calcAngle(Point vct1, Point vct2)
+double DroneNavController::calcAngle(MyPoint vct1, MyPoint vct2)
 {
 	double dot = vct1.x*vct2.x + vct1.y*vct2.y;     // dot product between[x1, y1] and [x2, y2]
 	double det = vct1.x*vct2.y - vct1.y*vct2.x;     // determinant
@@ -212,13 +212,13 @@ double DroneNavController::calcAngle(Point vct1, Point vct2)
 	return angle;
 }
 
-double DroneNavController::angleAtCorner(Point p1, Point p2, Point p3)
+double DroneNavController::angleAtCorner(MyPoint p1, MyPoint p2, MyPoint p3)
 {
-	Point vct1;
+	MyPoint vct1;
 	vct1.x = p2.x - p1.x;
 	vct1.y = p2.y - p1.y;
 
-	Point vct2;
+	MyPoint vct2;
 	vct2.x = p3.x - p2.x;
 	vct2.y = p3.y - p2.y;
 
@@ -227,14 +227,14 @@ double DroneNavController::angleAtCorner(Point p1, Point p2, Point p3)
 	return angle;
 }
 
-void DroneNavController::calcRotations(std::vector<Point> points,std::vector<int>& wt, std::vector<float>& rt)
+void DroneNavController::calcRotations(std::vector<MyPoint> points,std::vector<int>& wt, std::vector<float>& rt)
 {
 	double waitPerAngle = 127;
 
 	//special case for the first point
-	Point p1 = points.at(points.size() - 1);
-	Point p2 = points.at(0);
-	Point p3 = points.at(1);
+	MyPoint p1 = points.at(points.size() - 1);
+	MyPoint p2 = points.at(0);
+	MyPoint p3 = points.at(1);
 	
 	double angle = angleAtCorner(p1, p2, p3);
 
@@ -286,9 +286,9 @@ void DroneNavController::newUpdate()
 
 	//check the distance between the target and the drone	
 
-	Point dronePos = getDronePos();
+	MyPoint dronePos = getDronePos();
 
-	Point currentDest = activeNavPoints.at(currentDestIndex);
+	MyPoint currentDest = activeNavPoints.at(currentDestIndex);
 
 	if (dronePos.distance(currentDest) <= targetDestErrorMargin)
 	{
@@ -340,7 +340,7 @@ void DroneNavController::newUpdate()
 
 			currentDestIndex = currentDestIndex%activeNavPoints.size();
 
-			Point newDestPoint = activeNavPoints.at(currentDestIndex);
+			MyPoint newDestPoint = activeNavPoints.at(currentDestIndex);
 
 			//set a new dest
 			float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
@@ -374,7 +374,7 @@ void DroneNavController::newUpdate()
 				if (obsticalDetected) {
 					obsticalDetected = false;
 					//detection
-					Point newDestPoint = activeNavPoints.at(currentDestIndex);
+					MyPoint newDestPoint = activeNavPoints.at(currentDestIndex);
 
 					float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z };
 					simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
@@ -385,9 +385,9 @@ void DroneNavController::newUpdate()
 				if (!obsticalDetected)
 				{
 					//detection
-					Point newDestPoint = activeNavPoints.at(currentDestIndex);
+					MyPoint newDestPoint = activeNavPoints.at(currentDestIndex);
 
-					float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z + 3 };
+					float newDest[3] = { newDestPoint.x, newDestPoint.y, newDestPoint.z + 4 };
 					simxSetObjectPosition(clientID, targetHandle, -1, newDest, simx_opmode_oneshot);
 					obsticalDetected = true;
 				}
@@ -404,7 +404,7 @@ void DroneNavController::newUpdate()
 void DroneNavController::setupStartAndLand()
 {
 
-	Point readyPoint = base;
+	MyPoint readyPoint = base;
 
 	readyPoint.z = desiredAltitude;
 
@@ -433,7 +433,7 @@ void DroneNavController::genNavPoints()
 
 	if (createCircle)
 	{
-		Point center;
+		MyPoint center;
 		center.x = 0;
 		center.y = 0;
 		center.z = 0;

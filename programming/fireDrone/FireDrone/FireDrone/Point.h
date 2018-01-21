@@ -1,5 +1,7 @@
 #pragma once
-class Point
+
+
+class MyPoint
 {
 public:
 
@@ -7,10 +9,10 @@ public:
 	float y;
 	float z;
 
-	Point() :x(0),y(0),z(0) {};
-	Point(float xp,float yp,float zp) :x(xp), y(yp), z(zp) {};
-	~Point();
+	MyPoint() :x(0),y(0),z(0) {};
+	MyPoint(float xp,float yp,float zp) :x(xp), y(yp), z(zp) {};
+	~MyPoint();
 
-	float distance(const Point& p);
+	float distance(const MyPoint& p);
 };
 
